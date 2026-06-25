@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
@@ -9,15 +10,23 @@ const port = process.env.PORT || 8080;
 // CS5356 TODO #2
 // Uncomment this next line after you've created
 // serviceAccountKey.json
-const serviceAccount = require("../serviceAccountKey.json");
 const userFeed = require("./app/user-feed");
 const authMiddleware = require("./app/auth-middleware");
+const worldCupService = require("./app/world-cup-service");
 
 // CS5356 TODO #2
 // Uncomment this next block after you've created serviceAccountKey.json
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const serviceAccountPath = path.join(__dirname, "..", "serviceAccountKey.json");
+
+if (fs.existsSync(serviceAccountPath)) {
+  const serviceAccount = require(serviceAccountPath);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+} else {
+  console.warn("Firebase service account not found; authenticated routes are disabled.");
+}
 
 // use cookies
 app.use(cookieParser());
@@ -52,7 +61,28 @@ app.get("/dashboard", authMiddleware, async function (req, res) {
   res.render("pages/dashboard", { user: req.user, feed });
 });
 
+app.get("/world-cup", function (req, res) {
+  res.render("pages/world-cup");
+});
+
+app.get("/api/world-cup/knockout", async function (req, res) {
+  try {
+    const dashboard = await worldCupService.getKnockoutDashboard();
+    res.json(dashboard);
+  } catch (error) {
+    console.error(error);
+    res.status(502).json({
+      error: "Unable to load the ESPN FIFA World Cup scoreboard feed.",
+    });
+  }
+});
+
 app.post("/sessionLogin", async (req, res) => {
+  if (!admin.apps.length) {
+    res.status(503).send("Authentication is not configured.");
+    return;
+  }
+
   // CS5356 TODO #4
   // Get the ID token from the request body
   // Create a session cookie using the Firebase Admin SDK
@@ -128,4 +158,3 @@ console.log("Server started at http://localhost:" + port);
 // // Initialize Firebase
 // const firebase_app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(firebase_app);
-
