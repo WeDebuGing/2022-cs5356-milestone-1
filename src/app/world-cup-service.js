@@ -14,6 +14,34 @@ const ROUND_LAYOUT = [
   { key: "third-place", label: "Third Place", count: 1 },
   { key: "final", label: "Final", count: 1 },
 ];
+const BRACKET_SOURCE_MAP = {
+  "round-of-16": {
+    1: [{ roundKey: "round-of-32", slotNumber: 1 }, { roundKey: "round-of-32", slotNumber: 3 }],
+    2: [{ roundKey: "round-of-32", slotNumber: 2 }, { roundKey: "round-of-32", slotNumber: 5 }],
+    3: [{ roundKey: "round-of-32", slotNumber: 4 }, { roundKey: "round-of-32", slotNumber: 6 }],
+    4: [{ roundKey: "round-of-32", slotNumber: 7 }, { roundKey: "round-of-32", slotNumber: 8 }],
+    5: [{ roundKey: "round-of-32", slotNumber: 11 }, { roundKey: "round-of-32", slotNumber: 12 }],
+    6: [{ roundKey: "round-of-32", slotNumber: 9 }, { roundKey: "round-of-32", slotNumber: 10 }],
+    7: [{ roundKey: "round-of-32", slotNumber: 14 }, { roundKey: "round-of-32", slotNumber: 16 }],
+    8: [{ roundKey: "round-of-32", slotNumber: 13 }, { roundKey: "round-of-32", slotNumber: 15 }],
+  },
+  quarterfinals: {
+    1: [{ roundKey: "round-of-16", slotNumber: 1 }, { roundKey: "round-of-16", slotNumber: 2 }],
+    2: [{ roundKey: "round-of-16", slotNumber: 5 }, { roundKey: "round-of-16", slotNumber: 6 }],
+    3: [{ roundKey: "round-of-16", slotNumber: 3 }, { roundKey: "round-of-16", slotNumber: 4 }],
+    4: [{ roundKey: "round-of-16", slotNumber: 7 }, { roundKey: "round-of-16", slotNumber: 8 }],
+  },
+  semifinals: {
+    1: [{ roundKey: "quarterfinals", slotNumber: 1 }, { roundKey: "quarterfinals", slotNumber: 2 }],
+    2: [{ roundKey: "quarterfinals", slotNumber: 3 }, { roundKey: "quarterfinals", slotNumber: 4 }],
+  },
+  "third-place": {
+    1: [{ roundKey: "semifinals", slotNumber: 1 }, { roundKey: "semifinals", slotNumber: 2 }],
+  },
+  final: {
+    1: [{ roundKey: "semifinals", slotNumber: 1 }, { roundKey: "semifinals", slotNumber: 2 }],
+  },
+};
 
 let cache = {
   fetchedAt: 0,
@@ -118,7 +146,13 @@ function buildRounds(knockoutMatches) {
   let offset = 0;
 
   return ROUND_LAYOUT.map(round => {
-    const matches = knockoutMatches.slice(offset, offset + round.count);
+    const matches = knockoutMatches.slice(offset, offset + round.count).map((match, index) => ({
+      ...match,
+      roundKey: round.key,
+      roundLabel: round.label,
+      slotNumber: index + 1,
+      sourceSlots: getSourceSlots(round.key, index + 1, match),
+    }));
     offset += round.count;
 
     return {
@@ -128,6 +162,56 @@ function buildRounds(knockoutMatches) {
       live: matches.filter(match => match.status.state === "in").length,
     };
   });
+}
+
+function getSourceSlots(roundKey, slotNumber, match) {
+  const parsedSlots = parseSourceSlots(match);
+
+  if (parsedSlots.length) {
+    return parsedSlots;
+  }
+
+  return BRACKET_SOURCE_MAP[roundKey] && BRACKET_SOURCE_MAP[roundKey][slotNumber]
+    ? BRACKET_SOURCE_MAP[roundKey][slotNumber]
+    : [];
+}
+
+function parseSourceSlots(match) {
+  return match.competitors
+    .map(competitor => parseSourceSlot(competitor.name))
+    .filter(Boolean);
+}
+
+function parseSourceSlot(name) {
+  const source = String(name || "");
+  const roundOfMatch = source.match(/^Round of (32|16) (\d+) (Winner|Loser)$/i);
+
+  if (roundOfMatch) {
+    return {
+      roundKey: roundOfMatch[1] === "32" ? "round-of-32" : "round-of-16",
+      slotNumber: Number(roundOfMatch[2]),
+    };
+  }
+
+  const quarterfinalMatch = source.match(/^Quarterfinal (\d+) (Winner|Loser)$/i);
+
+  if (quarterfinalMatch) {
+    return {
+      roundKey: "quarterfinals",
+      slotNumber: Number(quarterfinalMatch[1]),
+    };
+  }
+
+  const semifinalMatch = source.match(/^Semifinal (\d+) (Winner|Loser)$/i);
+
+  if (semifinalMatch) {
+    return {
+      roundKey: "semifinals",
+      slotNumber: Number(semifinalMatch[1]),
+    };
+  }
+
+  return null;
 }
 
 function normalizeMatch(event) {

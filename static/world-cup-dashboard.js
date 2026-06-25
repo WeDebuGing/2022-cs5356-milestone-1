@@ -11,6 +11,34 @@ const ROUND_LAYOUT = [
   { key: "third-place", label: "Third Place", count: 1 },
   { key: "final", label: "Final", count: 1 },
 ];
+const BRACKET_SOURCE_MAP = {
+  "round-of-16": {
+    1: [{ roundKey: "round-of-32", slotNumber: 1 }, { roundKey: "round-of-32", slotNumber: 3 }],
+    2: [{ roundKey: "round-of-32", slotNumber: 2 }, { roundKey: "round-of-32", slotNumber: 5 }],
+    3: [{ roundKey: "round-of-32", slotNumber: 4 }, { roundKey: "round-of-32", slotNumber: 6 }],
+    4: [{ roundKey: "round-of-32", slotNumber: 7 }, { roundKey: "round-of-32", slotNumber: 8 }],
+    5: [{ roundKey: "round-of-32", slotNumber: 11 }, { roundKey: "round-of-32", slotNumber: 12 }],
+    6: [{ roundKey: "round-of-32", slotNumber: 9 }, { roundKey: "round-of-32", slotNumber: 10 }],
+    7: [{ roundKey: "round-of-32", slotNumber: 14 }, { roundKey: "round-of-32", slotNumber: 16 }],
+    8: [{ roundKey: "round-of-32", slotNumber: 13 }, { roundKey: "round-of-32", slotNumber: 15 }],
+  },
+  quarterfinals: {
+    1: [{ roundKey: "round-of-16", slotNumber: 1 }, { roundKey: "round-of-16", slotNumber: 2 }],
+    2: [{ roundKey: "round-of-16", slotNumber: 5 }, { roundKey: "round-of-16", slotNumber: 6 }],
+    3: [{ roundKey: "round-of-16", slotNumber: 3 }, { roundKey: "round-of-16", slotNumber: 4 }],
+    4: [{ roundKey: "round-of-16", slotNumber: 7 }, { roundKey: "round-of-16", slotNumber: 8 }],
+  },
+  semifinals: {
+    1: [{ roundKey: "quarterfinals", slotNumber: 1 }, { roundKey: "quarterfinals", slotNumber: 2 }],
+    2: [{ roundKey: "quarterfinals", slotNumber: 3 }, { roundKey: "quarterfinals", slotNumber: 4 }],
+  },
+  "third-place": {
+    1: [{ roundKey: "semifinals", slotNumber: 1 }, { roundKey: "semifinals", slotNumber: 2 }],
+  },
+  final: {
+    1: [{ roundKey: "semifinals", slotNumber: 1 }, { roundKey: "semifinals", slotNumber: 2 }],
+  },
+};
 
 const elements = {
   sourceName: document.getElementById("source-name"),
@@ -126,7 +154,13 @@ function buildRounds(knockoutMatches) {
   let offset = 0;
 
   return ROUND_LAYOUT.map(round => {
-    const matches = knockoutMatches.slice(offset, offset + round.count);
+    const matches = knockoutMatches.slice(offset, offset + round.count).map((match, index) => ({
+      ...match,
+      roundKey: round.key,
+      roundLabel: round.label,
+      slotNumber: index + 1,
+      sourceSlots: getSourceSlots(round.key, index + 1, match),
+    }));
     offset += round.count;
 
     return {
@@ -136,6 +170,56 @@ function buildRounds(knockoutMatches) {
       live: matches.filter(match => match.status.state === "in").length,
     };
   });
+}
+
+function getSourceSlots(roundKey, slotNumber, match) {
+  const parsedSlots = parseSourceSlots(match);
+
+  if (parsedSlots.length) {
+    return parsedSlots;
+  }
+
+  return BRACKET_SOURCE_MAP[roundKey] && BRACKET_SOURCE_MAP[roundKey][slotNumber]
+    ? BRACKET_SOURCE_MAP[roundKey][slotNumber]
+    : [];
+}
+
+function parseSourceSlots(match) {
+  return match.competitors
+    .map(competitor => parseSourceSlot(competitor.name))
+    .filter(Boolean);
+}
+
+function parseSourceSlot(name) {
+  const source = String(name || "");
+  const roundOfMatch = source.match(/^Round of (32|16) (\d+) (Winner|Loser)$/i);
+
+  if (roundOfMatch) {
+    return {
+      roundKey: roundOfMatch[1] === "32" ? "round-of-32" : "round-of-16",
+      slotNumber: Number(roundOfMatch[2]),
+    };
+  }
+
+  const quarterfinalMatch = source.match(/^Quarterfinal (\d+) (Winner|Loser)$/i);
+
+  if (quarterfinalMatch) {
+    return {
+      roundKey: "quarterfinals",
+      slotNumber: Number(quarterfinalMatch[1]),
+    };
+  }
+
+  const semifinalMatch = source.match(/^Semifinal (\d+) (Winner|Loser)$/i);
+
+  if (semifinalMatch) {
+    return {
+      roundKey: "semifinals",
+      slotNumber: Number(semifinalMatch[1]),
+    };
+  }
+
+  return null;
 }
 
 function normalizeMatch(event) {
@@ -239,20 +323,134 @@ function renderRounds(rounds) {
     return;
   }
 
-  rounds.forEach(round => {
-    const section = document.createElement("article");
-    section.className = "wc-round";
-    section.innerHTML = `
-      <div class="wc-round-header">
-        <h3 class="wc-round-title">${escapeHtml(round.label)}</h3>
-        <span class="wc-pill">${round.completed}/${round.matches.length} complete</span>
+  const bracket = buildBracket(rounds);
+
+  if (!bracket.finalNode) {
+    elements.rounds.appendChild(emptyState("The knockout bracket is not available from the feed yet."));
+    return;
+  }
+
+  const section = document.createElement("article");
+  section.className = "wc-round wc-bracket-panel";
+  section.innerHTML = `
+    <div class="wc-round-header">
+      <div>
+        <h3 class="wc-round-title">Championship path</h3>
+        <p class="wc-round-subtitle">${formatRoundSummary(rounds)}</p>
       </div>
-      <div class="wc-match-grid">
-        ${round.matches.map(renderMatch).join("") || `<div class="wc-empty">No matches in feed.</div>`}
+      <span class="wc-pill">${bracket.completed}/${bracket.total} complete</span>
+    </div>
+    <div class="wc-bracket-scroll">
+      <div class="wc-bracket-tree">
+        ${renderBranchNode(bracket.finalNode)}
+      </div>
+    </div>
+    ${bracket.thirdPlace ? renderThirdPlace(bracket.thirdPlace) : ""}
+  `;
+  elements.rounds.appendChild(section);
+}
+
+function buildBracket(rounds) {
+  const matchesByRound = rounds.reduce((lookup, round) => {
+    lookup[round.key] = round.matches.reduce((matches, match, index) => {
+      matches[match.slotNumber || index + 1] = {
+        ...match,
+        roundKey: match.roundKey || round.key,
+        roundLabel: match.roundLabel || round.label,
+        slotNumber: match.slotNumber || index + 1,
+        sourceSlots: match.sourceSlots || getSourceSlots(round.key, index + 1, match),
+      };
+      return matches;
+    }, {});
+    return lookup;
+  }, {});
+
+  function buildNode(roundKey, slotNumber, visited) {
+    const match = matchesByRound[roundKey] && matchesByRound[roundKey][slotNumber];
+
+    if (!match) {
+      return null;
+    }
+
+    const visitKey = `${roundKey}:${slotNumber}`;
+
+    if (visited.includes(visitKey)) {
+      return { match, children: [] };
+    }
+
+    const sourceSlots = match.sourceSlots || getSourceSlots(roundKey, slotNumber, match);
+    const children = sourceSlots
+      .map(slot => buildNode(slot.roundKey, slot.slotNumber, visited.concat(visitKey)))
+      .filter(Boolean);
+
+    return {
+      match,
+      children,
+    };
+  }
+
+  const finalNode = buildNode("final", 1, []);
+  const thirdPlace = matchesByRound["third-place"] && matchesByRound["third-place"][1];
+
+  return {
+    finalNode,
+    thirdPlace,
+    total: rounds.reduce((total, round) => total + round.matches.length, 0),
+    completed: rounds.reduce((total, round) => total + round.completed, 0),
+  };
+}
+
+function renderBranchNode(node) {
+  const hasChildren = node.children.length > 0;
+
+  if (!hasChildren) {
+    return `
+      <div class="wc-branch wc-branch-leaf">
+        <div class="wc-branch-match">${renderBracketMatch(node.match)}</div>
       </div>
     `;
-    elements.rounds.appendChild(section);
-  });
+  }
+
+  return `
+    <div class="wc-branch">
+      <div class="wc-branch-children">
+        ${node.children.map(renderBranchNode).join("")}
+      </div>
+      <div class="wc-branch-connector" aria-hidden="true"></div>
+      <div class="wc-branch-match">${renderBracketMatch(node.match)}</div>
+    </div>
+  `;
+}
+
+function renderBracketMatch(match) {
+  return `
+    <div class="wc-bracket-card">
+      <div class="wc-bracket-label">
+        <span>${escapeHtml(match.roundLabel || "Knockout")}</span>
+        <span>Match ${escapeHtml(match.slotNumber || "")}</span>
+      </div>
+      ${renderMatch(match)}
+    </div>
+  `;
+}
+
+function renderThirdPlace(match) {
+  return `
+    <div class="wc-third-place">
+      <div>
+        <h3 class="wc-round-title">Third-place match</h3>
+        <p class="wc-round-subtitle">Semifinal losers feed into this placement match.</p>
+      </div>
+      <div class="wc-third-place-card">${renderBracketMatch(match)}</div>
+    </div>
+  `;
+}
+
+function formatRoundSummary(rounds) {
+  return rounds
+    .filter(round => round.key !== "third-place")
+    .map(round => `${round.label}: ${round.completed}/${round.matches.length}`)
+    .join(" | ");
 }
 
 function renderMatch(match) {
