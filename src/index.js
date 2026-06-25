@@ -45,7 +45,7 @@ app.use("/static", express.static("static/"));
 // use res.render to load up an ejs view file
 // index page
 app.get("/", function (req, res) {
-  res.render("pages/index");
+  res.redirect("/world-cup");
 });
 
 app.get("/sign-in", function (req, res) {
