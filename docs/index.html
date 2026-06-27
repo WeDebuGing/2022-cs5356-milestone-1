@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World Cup 2026 Knockout Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="static/world-cup-dashboard.css">
+</head>
+
+<body class="world-cup-page">
+  <nav class="navbar is-warning">
+    <div class="container">
+      <div class="navbar-brand">
+        <a href="./" class="navbar-item">World Cup 2026</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="world-cup-dashboard" class="world-cup-shell">
+    <section class="wc-hero">
+      <div>
+        <p class="wc-kicker">World Cup 2026 Knockout Stage</p>
+        <h1>Live matchup dashboard</h1>
+        <p class="wc-subtitle">
+          Bracket slots, scores, venues, and match status refresh automatically from ESPN's FIFA World Cup scoreboard.
+        </p>
+      </div>
+      <div class="wc-source-panel" aria-live="polite">
+        <span class="wc-source-label">Data</span>
+        <strong id="source-name">Loading live feed</strong>
+        <span id="last-updated">Connecting...</span>
+      </div>
+    </section>
+
+    <section id="feed-alert" class="wc-alert" hidden></section>
+
+    <section class="wc-live-strip" aria-label="Live tournament status">
+      <article class="wc-stat">
+        <span>Knockout Matches</span>
+        <strong id="stat-knockout">--</strong>
+      </article>
+      <article class="wc-stat">
+        <span>Completed</span>
+        <strong id="stat-completed">--</strong>
+      </article>
+      <article class="wc-stat">
+        <span>Live Now</span>
+        <strong id="stat-live">--</strong>
+      </article>
+      <article class="wc-stat wc-next">
+        <span>Next Knockout Match</span>
+        <strong id="stat-next">--</strong>
+      </article>
+    </section>
+
+    <section class="wc-section">
+      <div class="wc-section-heading">
+        <div>
+          <p class="wc-kicker">Now Playing</p>
+          <h2>Live matches</h2>
+        </div>
+        <span id="live-count" class="wc-pill">Checking feed</span>
+      </div>
+      <div id="live-matches" class="wc-live-list"></div>
+    </section>
+
+    <section class="wc-section">
+      <div class="wc-section-heading">
+        <div>
+          <p class="wc-kicker">Bracket</p>
+          <h2>Knockout bracket</h2>
+        </div>
+        <button id="refresh-button" class="wc-icon-button" type="button" aria-label="Refresh dashboard">
+          <span class="material-icons" aria-hidden="true">refresh</span>
+        </button>
+      </div>
+      <div id="rounds" class="wc-rounds"></div>
+    </section>
+  </main>
+
+  <script src="static/world-cup-dashboard.js"></script>
+</body>
+
+</html>

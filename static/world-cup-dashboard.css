@@ -1,0 +1,440 @@
+:root {
+  --wc-bg: #f6f7f3;
+  --wc-ink: #101619;
+  --wc-muted: #627071;
+  --wc-panel: #ffffff;
+  --wc-line: #dfe5df;
+  --wc-live: #c5242d;
+  --wc-green: #116149;
+  --wc-gold: #d9a22e;
+  --wc-blue: #255a80;
+}
+
+.world-cup-page {
+  min-height: 100vh;
+  background: var(--wc-bg);
+  color: var(--wc-ink);
+}
+
+.world-cup-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.wc-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 28px;
+  align-items: end;
+  padding: 34px;
+  color: #fff;
+  background:
+    linear-gradient(110deg, rgba(10, 22, 26, 0.92), rgba(17, 97, 73, 0.78)),
+    url("https://a.espncdn.com/i/teamlogos/leagues/500/fifa.world.png") right 34px center / 220px no-repeat,
+    #123a37;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wc-kicker {
+  margin: 0 0 8px;
+  color: var(--wc-gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.wc-hero h1,
+.wc-section-heading h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.wc-hero h1 {
+  max-width: 760px;
+  font-size: clamp(2rem, 5vw, 4.3rem);
+  line-height: 1;
+}
+
+.wc-subtitle {
+  max-width: 680px;
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 1.05rem;
+}
+
+.wc-source-panel,
+.wc-stat,
+.wc-round,
+.wc-match,
+.wc-live-card,
+.wc-alert {
+  border: 1px solid var(--wc-line);
+  border-radius: 8px;
+  background: var(--wc-panel);
+}
+
+.wc-source-panel {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  color: var(--wc-ink);
+}
+
+.wc-source-label,
+.wc-stat span,
+.wc-meta,
+.wc-status,
+.wc-placeholder {
+  color: var(--wc-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.wc-live-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 30px;
+}
+
+.wc-stat {
+  min-height: 110px;
+  padding: 18px;
+}
+
+.wc-stat strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.wc-next strong {
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.wc-section {
+  margin-top: 30px;
+}
+
+.wc-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.wc-section-heading h2 {
+  font-size: 1.45rem;
+}
+
+.wc-pill,
+.wc-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--wc-line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--wc-ink);
+  font-weight: 800;
+}
+
+.wc-icon-button {
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wc-alert {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-color: #f1c9a2;
+  background: #fff6eb;
+}
+
+.wc-alert[hidden] {
+  display: none;
+}
+
+.wc-live-list,
+.wc-rounds {
+  display: grid;
+  gap: 14px;
+}
+
+.wc-live-list {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.wc-round {
+  padding: 18px;
+}
+
+.wc-round-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.wc-round-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.wc-round-subtitle {
+  margin: 6px 0 0;
+  color: var(--wc-muted);
+  font-size: 0.86rem;
+}
+
+.wc-match-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+.wc-bracket-panel {
+  overflow: hidden;
+}
+
+.wc-bracket-scroll {
+  margin: 0 -18px;
+  overflow-x: auto;
+  padding: 4px 18px 18px;
+}
+
+.wc-bracket-tree {
+  display: inline-flex;
+  align-items: center;
+  min-width: 1180px;
+  padding: 8px 0;
+}
+
+.wc-branch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wc-branch-children {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.wc-branch-children::after {
+  position: absolute;
+  top: 42px;
+  right: -8px;
+  bottom: 42px;
+  width: 2px;
+  background: var(--wc-line);
+  content: "";
+}
+
+.wc-branch-connector {
+  width: 14px;
+  height: 2px;
+  background: var(--wc-line);
+}
+
+.wc-branch-leaf {
+  min-height: 0;
+}
+
+.wc-branch-match {
+  position: relative;
+  width: 200px;
+  flex: 0 0 200px;
+}
+
+.wc-bracket-card {
+  position: relative;
+}
+
+.wc-bracket-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  color: var(--wc-muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.wc-bracket-card .wc-match {
+  min-height: 176px;
+}
+
+.wc-bracket-card .wc-match-top,
+.wc-bracket-card .wc-match-footer {
+  flex-direction: column;
+  gap: 5px;
+}
+
+.wc-third-place {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 18px;
+  align-items: start;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--wc-line);
+}
+
+.wc-third-place-card {
+  width: 100%;
+}
+
+.wc-match,
+.wc-live-card {
+  padding: 14px;
+}
+
+.wc-match.is-live,
+.wc-live-card {
+  border-color: rgba(197, 36, 45, 0.42);
+  box-shadow: inset 4px 0 0 var(--wc-live);
+}
+
+.wc-match.is-complete {
+  box-shadow: inset 4px 0 0 var(--wc-green);
+}
+
+.wc-match-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.wc-status.is-live {
+  color: var(--wc-live);
+}
+
+.wc-status.is-complete {
+  color: var(--wc-green);
+}
+
+.wc-team {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(26px, auto);
+  gap: 10px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.wc-team + .wc-team {
+  margin-top: 8px;
+}
+
+.wc-crest {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.wc-crest-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eef1ed;
+  color: var(--wc-blue);
+}
+
+.wc-team-name {
+  min-width: 0;
+  overflow-wrap: break-word;
+  font-weight: 800;
+}
+
+.wc-score {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.wc-winner .wc-team-name,
+.wc-winner .wc-score {
+  color: var(--wc-green);
+}
+
+.wc-match-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--wc-muted);
+  font-size: 0.86rem;
+}
+
+.wc-empty {
+  padding: 18px;
+  border: 1px dashed var(--wc-line);
+  border-radius: 8px;
+  color: var(--wc-muted);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+@media (max-width: 860px) {
+  .wc-hero,
+  .wc-live-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .wc-hero {
+    padding: 26px;
+    background:
+      linear-gradient(110deg, rgba(10, 22, 26, 0.94), rgba(17, 97, 73, 0.78)),
+      url("https://a.espncdn.com/i/teamlogos/leagues/500/fifa.world.png") right 18px top 18px / 120px no-repeat,
+      #123a37;
+  }
+
+  .wc-section-heading,
+  .wc-round-header,
+  .wc-match-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wc-bracket-scroll {
+    margin: 0 -18px;
+  }
+
+  .wc-bracket-tree {
+    min-width: 1080px;
+  }
+
+  .wc-branch {
+    gap: 8px;
+  }
+
+  .wc-branch-match {
+    width: 188px;
+    flex-basis: 188px;
+  }
+
+  .wc-third-place {
+    grid-template-columns: 1fr;
+  }
+}
